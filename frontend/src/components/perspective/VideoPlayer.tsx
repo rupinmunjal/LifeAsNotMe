@@ -11,25 +11,41 @@ interface VideoPlayerProps {
 
 const VideoPlayer = ({
   title = "Perspective Video",
-  videoUrl = "https://example.com/video.mp4",
+  videoUrl = "https://www.w3schools.com/html/mov_bbb.mp4",
   thumbnailUrl = "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60",
 }: VideoPlayerProps) => {
+  const videoRef = React.useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [isMuted, setIsMuted] = React.useState(false);
 
-  return (
-    <Card className="w-full max-w-[680px] h-[380px] bg-background overflow-hidden">
-      <div className="relative w-full h-full">
-        {/* Video thumbnail/placeholder */}
-        <div className="absolute inset-0">
-          <img
-            src={thumbnailUrl}
-            alt={title}
-            className="w-full h-full object-cover"
-          />
-        </div>
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
 
-        {/* Video controls overlay */}
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
+
+  return (
+    <Card className="w-full max-w-[50rem] h-[19rem] bg-background overflow-hidden">
+      <div className="relative w-full h-full">
+        <video
+          ref={videoRef}
+          src={videoUrl}
+          poster={thumbnailUrl}
+          className="w-full h-full object-cover"
+          onClick={togglePlay}
+        />
         <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-200">
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
             <div className="flex items-center justify-between">
@@ -38,7 +54,7 @@ const VideoPlayer = ({
                   variant="ghost"
                   size="icon"
                   className="text-white hover:bg-white/20"
-                  onClick={() => setIsPlaying(!isPlaying)}
+                  onClick={togglePlay}
                 >
                   {isPlaying ? (
                     <Pause className="h-6 w-6" />
@@ -50,7 +66,7 @@ const VideoPlayer = ({
                   variant="ghost"
                   size="icon"
                   className="text-white hover:bg-white/20"
-                  onClick={() => setIsMuted(!isMuted)}
+                  onClick={toggleMute}
                 >
                   {isMuted ? (
                     <VolumeX className="h-6 w-6" />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
 
@@ -11,6 +11,15 @@ const LoadingTransition = ({
   isLoading = true,
   message = "Generating your perspective videos...",
 }: LoadingTransitionProps) => {
+  useEffect(() => {
+    // Simulate loading time (3 seconds) then redirect to results
+    const timer = setTimeout(() => {
+      window.location.href = "/results";
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
