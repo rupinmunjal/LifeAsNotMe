@@ -36,6 +36,13 @@ const VideoPlayer = ({
     }
   };
 
+  const handleVideoEnd = () => {
+    if (videoRef.current) {
+      videoRef.current.play(); // Restart the video
+      setIsPlaying(true); // Ensure the play state is updated
+    }
+  };
+
   return (
     <Card className="w-full max-w-[50rem] h-[19rem] bg-background overflow-hidden">
       <div className="relative w-full h-full">
@@ -45,6 +52,7 @@ const VideoPlayer = ({
           poster={thumbnailUrl}
           className="w-full h-full object-cover"
           onClick={togglePlay}
+          onEnded={handleVideoEnd} // Add this event handler
         />
         <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity duration-200">
           <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
