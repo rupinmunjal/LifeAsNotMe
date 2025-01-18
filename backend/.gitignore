@@ -1,0 +1,7 @@
+# ENV
+.env*
+
+# Cache
+__pycache__/
+
+hackathons-31265-afd5eed65e6f.json
