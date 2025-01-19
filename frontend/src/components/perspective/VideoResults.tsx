@@ -13,19 +13,19 @@ const VideoResults = ({
   videos = [
     {
       title: "Through a Cat's Eyes",
-      videoUrl: "https://www.w3schools.com/html/mov_bbb.mp4",
+      videoUrl: "../public/assets/videos/cat.mp4",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     },
     {
       title: "Life as a Tree",
-      videoUrl: "https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4",
+      videoUrl: "../public/assets/videos/tree.mp4",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     },
     {
       title: "Ocean Waves View",
-      videoUrl: "https://www.w3schools.com/html/movie.mp4",
+      videoUrl: "../public/assets/videos/ocean.mp4",
       thumbnailUrl:
         "https://images.unsplash.com/photo-1505118380757-91f5f5632de0?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=60",
     },
