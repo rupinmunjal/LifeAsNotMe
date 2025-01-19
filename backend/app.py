@@ -1,9 +1,11 @@
 from flask import Flask, request, jsonify
 from video_creator import generate_video
 from google.cloud import storage
+from flask_cors import CORS
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)
 
 # Set Google Cloud bucket name
 bucket_name = "uofthacks12-lifeasnotme"
@@ -22,7 +24,7 @@ def generate():
         # Get data from request
         data = request.json
         prompt = data.get("prompt", "")
-        num_frames = data.get("num_frames", 12)
+        num_frames = data.get("num_frames", 24)
 
         # Delegate video generation to the separate module
         result = generate_video(prompt, num_frames)
@@ -49,4 +51,4 @@ def get_video(filename):
         return jsonify({"error": f"An error occurred: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, port=5000)

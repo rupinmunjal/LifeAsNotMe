@@ -7,7 +7,7 @@ interface VideoResultsProps {
   videos?: Array<{
     title: string;
     videoUrl: string;
-  }>;
+  }>[];
 }
 
 const VideoResults = ({ videos = [] }: VideoResultsProps) => {
@@ -16,36 +16,25 @@ const VideoResults = ({ videos = [] }: VideoResultsProps) => {
   const { perspective } = location.state || { perspective: "a unique perspective" };
   const [isGenerating, setIsGenerating] = useState(true);
   const [updatedVideoUrl, setUpdatedVideoUrl] = useState("");
+  const [displayedVideos, setDisplayedVideos] = useState<Array<any>>([]);
 
-  const videoOptions = {
-    "a curious cat": [
-      {
-        title: "Curious Cat Video 1",
-        videoUrl: "../public/assets/videos/cat1.mp4",
-      },
-      {
-        title: "Curious Cat Video 2",
-        videoUrl: "../public/assets/videos/cat2.mp4",
-      },
-      {
-        title: "Curious Cat Video 3",
-        videoUrl: "../public/assets/videos/cat3.mp4",
-      },
-    ],
-    "a floating cloud": [
-      {
-        title: "Floating Cloud Video 1",
-        videoUrl: "../public/assets/videos/cloud1.mp4",
-      },
-      {
-        title: "Floating Cloud Video 2",
-        videoUrl: "../public/assets/videos/cloud2.mp4",
-      },
-      {
-        title: "Floating Cloud Video 3",
-        videoUrl: "../public/assets/videos/cloud3.mp4",
-      },
-    ],
+  const getVideoOptions = (perspective: string) => {
+    const baseUrl = "https://storage.googleapis.com/uofthacks12-lifeasnotme/generated_videos/";
+    if (perspective.toLowerCase() === "a curious cat") {
+      return [
+        { title: "Curious Cat Video 1", videoUrl: `${baseUrl}cat1.mp4` },
+        { title: "Curious Cat Video 2", videoUrl: `${baseUrl}cat2.mp4` },
+        { title: "Curious Cat Video 3", videoUrl: `${baseUrl}cat3.mp4` },
+      ];
+    } else if (perspective.toLowerCase() === "a floating cloud") {
+      return [
+        { title: "Floating Cloud Video 1", videoUrl: `${baseUrl}cloud1.mp4` },
+        { title: "Floating Cloud Video 2", videoUrl: `${baseUrl}cloud2.mp4` },
+        { title: "Floating Cloud Video 3", videoUrl: `${baseUrl}cloud3.mp4` },
+      ];
+    } else {
+      return [];
+    }
   };
 
   const placeholderVideo = {
@@ -53,36 +42,128 @@ const VideoResults = ({ videos = [] }: VideoResultsProps) => {
     videoUrl: "",
   };
 
-  const [displayedVideos, setDisplayedVideos] = useState<Array<any>>([]);
+  // Function to check if the video exists in cloud storage
+  const checkIfVideoExists = async (videoUrl: string) => {
+    try {
+      const response = await fetch(videoUrl);
+      return response.ok;
+    } catch (error) {
+      console.error("Error checking video existence:", error);
+      return false;
+    }
+  };
 
   useEffect(() => {
-    // Add preloaded videos based on perspective
-    const newVideos = videoOptions[perspective.toLowerCase()]
-      ? [...videoOptions[perspective.toLowerCase()], placeholderVideo]
+    const newVideos = getVideoOptions(perspective)
+      ? [...getVideoOptions(perspective), placeholderVideo]
       : [placeholderVideo];
     setDisplayedVideos(newVideos);
 
-    // Simulate API call for the last video (10-minute delay)
-    const timer = setTimeout(() => {
-      const generatedVideoUrl = "https://sample-videos.com/video123/mp4/480/asdasdas.mp4"; // Example URL
-      setUpdatedVideoUrl(generatedVideoUrl);
-      setIsGenerating(false);
+    const fetchGeneratedVideo = async () => {
+      // Replace spaces with underscores in the perspective name to match the backend file naming convention
+      const formattedPerspective = perspective.replace(/\s+/g, "_");
+      const videoUrl = `https://storage.googleapis.com/uofthacks12-lifeasnotme/generated_videos/${formattedPerspective}.mp4`; // Form the URL based on perspective
+      const videoExists = await checkIfVideoExists(videoUrl);
 
-      // Update the last video with the generated one
-      setDisplayedVideos((prev) =>
-        prev.map((video, index) =>
-          index === prev.length - 1
-            ? {
-                ...video,
-                title: `Through ${perspective}'s Eyes`,
-                videoUrl: generatedVideoUrl,
-              }
-            : video
-        )
-      );
-    }, 10 * 60 * 1000); // 10 minutes
+      if (videoExists) {
+        // If the video exists, update the displayed video with the URL
+        setDisplayedVideos((prev) =>
+          prev.map((video, index) =>
+            index === prev.length - 1
+              ? {
+                  ...video,
+                  title: `Through ${perspective}'s Eyes`,
+                  videoUrl, // Use the existing video URL
+                }
+              : video
+          )
+        );
+        setUpdatedVideoUrl(videoUrl);
+        setIsGenerating(false);
+      } else {
+        // If the video does not exist, make the API call to generate it
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 180000); // Set timeout to 3 minutes
 
-    return () => clearTimeout(timer);
+        try {
+          // Immediately make the API call to generate the video
+          const response = await fetch("http://localhost:5000/generate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              // "Access-Control-Allow-Origin": "*",
+              // "cache-control": "no-cache",
+            },
+            body: JSON.stringify({
+              prompt: perspective, // Sending the perspective as the prompt
+              num_frames: 12, // Specify any additional parameters as needed
+            }),
+            signal: controller.signal, // Pass the AbortController signal
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to generate video");
+          }
+
+          const data = await response.json();
+
+          setDisplayedVideos((prev) =>
+            prev.map((video, index) =>
+              index === prev.length - 1
+                ? {
+                    ...video,
+                    title: `Through ${perspective}'s Eyes`,
+                    videoUrl: data.file_url, // Assuming the API returns the URL as `file_url`
+                  }
+                : video
+            )
+          );
+          setUpdatedVideoUrl(data.file_url);
+          setIsGenerating(false);
+
+          // Now, check every 5 minutes if the video is available
+          const checkInterval = setInterval(async () => {
+            const exists = await checkIfVideoExists(data.file_url);
+            if (exists) {
+              // Once the video exists, stop checking and update the displayed videos
+              setDisplayedVideos((prev) =>
+                prev.map((video, index) =>
+                  index === prev.length - 1
+                    ? {
+                        ...video,
+                        title: `Through ${perspective}'s Eyes`,
+                        videoUrl: data.file_url,
+                      }
+                    : video
+                )
+              );
+              clearInterval(checkInterval); // Stop checking
+            }
+          }, 300000); // Check every 5 minutes
+
+        } catch (error) {
+          console.error("Error generating video:", error);
+          setDisplayedVideos((prev) =>
+            prev.map((video, index) =>
+              index === prev.length - 1
+                ? {
+                    ...video,
+                    title: "Error Generating Video",
+                    videoUrl: "",
+                  }
+                : video
+            )
+          );
+          setIsGenerating(false);
+        } finally {
+          clearTimeout(timeout); // Clear the timeout to avoid memory leaks
+        }
+      }
+    };
+
+    fetchGeneratedVideo();
+
+    return () => setIsGenerating(false);
   }, [perspective]);
 
   return (
