@@ -20,7 +20,7 @@ const LoadingTransition = ({
     // Simulate loading time (3 seconds) then redirect to results
     const timer = setTimeout(() => {
       navigate("/results", { state: { perspective } });
-    }, 1000);
+    }, 6000);
 
     return () => clearTimeout(timer);
   }, [navigate, perspective]);

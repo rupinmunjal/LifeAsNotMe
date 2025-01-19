@@ -167,7 +167,7 @@ const VideoResults = ({ videos = [] }: VideoResultsProps) => {
   }, [perspective]);
 
   return (
-    <div className="h-screen w-full overflow-hidden bg-background">
+    <div className="min-h-screen w-full overflow-hidden bg-background">
       <div className="h-full w-full p-6 md:p-8 lg:p-12">
         <div className="h-full max-w-[1400px] mx-auto">
           <div className="flex justify-between items-center mb-6">

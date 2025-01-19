@@ -42,7 +42,7 @@ const VideoPlayer = ({
   };
 
   return (
-    <Card className="w-full max-w-[50rem] h-[19rem] bg-background overflow-hidden border border-gray-300 rounded-lg shadow-lg">
+    <Card className="w-full max-w-full h-[40vh] bg-background overflow-hidden border border-gray-300 rounded-lg shadow-lg">
       <div className="relative w-full h-full">
         <video
           ref={videoRef}
